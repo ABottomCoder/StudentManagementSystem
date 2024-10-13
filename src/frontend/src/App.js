@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import './App.css';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import {Breadcrumb, Layout, Menu, theme, Table, Spin, Empty} from 'antd';
 import {getAllStudents}  from "./client";
 import {
     DesktopOutlined,
@@ -8,6 +8,7 @@ import {
     PieChartOutlined,
     TeamOutlined,
     UserOutlined,
+    LoadingOutlined,
 } from '@ant-design/icons';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -31,7 +32,36 @@ const items = [
     getItem('Files', '9', <FileOutlined />),
 ];
 
+const columns = [
+    {
+        title: 'Id',
+        dataIndex: 'id',
+        key: 'id',
+    },
+    {
+        title: 'Name',
+        dataIndex: 'name',
+        key: 'name',
+    },
+    {
+        title: 'Email',
+        dataIndex: 'email',
+        key: 'email',
+    },
+    {
+        title: 'Gender',
+        dataIndex: 'gender',
+        key: 'gender',
+    },
+];
 
+
+const antIcon = <LoadingOutlined
+    style={{
+        fontSize: 24,
+    }}
+    spin
+/>;
 
 function App() {
     const [collapsed, setCollapsed] = useState(false);
@@ -39,6 +69,7 @@ function App() {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
     const [students, setStudents] = useState([]);
+    const [fetching, setFetching] = useState(true);
 
     const fetchStudents = () =>
         getAllStudents()
@@ -46,6 +77,7 @@ function App() {
             .then(data => {
                 console.log(data);
                 setStudents(data);
+                setFetching(false);
             })
 
     useEffect(() => {
@@ -53,9 +85,29 @@ function App() {
         fetchStudents();
     }, []);
 
-    if(students.length <= 0){
-        return "no data";
+    const renderStudents = () => {
+        if(fetching){
+            return <Spin indicator={antIcon}/>
+        }
+        if (students.length <= 0){
+            return <Empty />;
+        }
+        return <Table
+            dataSource={students}
+            columns={columns}
+            bordered
+            title={() => 'Students'}
+            pagination={{
+                pageSize: 50,
+            }}
+            scroll={{
+                y: 55 * 5,
+            }}
+            rowKey={(student) => student.id}
+        />;
     }
+
+
 
   return <Layout
       style={{
@@ -94,7 +146,7 @@ function App() {
                       borderRadius: borderRadiusLG,
                   }}
               >
-                  Bill is a cat.
+                  {renderStudents()}
               </div>
           </Content>
           <Footer
@@ -102,7 +154,7 @@ function App() {
                   textAlign: 'center',
               }}
           >
-              Ant Design ©{new Date().getFullYear()} Created by Ant UED
+              By Hong
           </Footer>
       </Layout>
   </Layout>
